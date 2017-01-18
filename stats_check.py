@@ -36,8 +36,8 @@ def check_duration(json_data, dstfile, duration = 12):
             continue
 
         # debug check:
-        if i >200:
-            break
+        # if i >200:
+        #      break
 
     with open(dstfile, 'w') as outfile:
         json.dump(refined_list, outfile)
@@ -52,12 +52,12 @@ def main(argv):
     gflags.DEFINE_string('dstfile', None, 'dstination json file[json/sports1m_test_(duration).json]')
 
     argv = FLAGS(argv)
-    
+
     srcfile = FLAGS.srcfile
     dstfile = FLAGS.dstfile
     if not dstfile:
         srcname, srcext = os.path.splitext(srcfile)
-        dstfile = '{:s}_{:02d}.{:s}'.format(srcname,FLAGS.duration, srcext)
+        dstfile = '{:s}_{:02d}{:s}'.format(srcname,FLAGS.duration, srcext)
 
 
     raw_json_data = read_json(srcfile)
