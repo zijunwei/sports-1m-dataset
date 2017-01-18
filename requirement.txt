@@ -1,0 +1,4 @@
+# gflags
+conda install -c anaconda python-gflags
+# pytube
+pip install pytube

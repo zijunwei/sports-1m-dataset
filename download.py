@@ -2,6 +2,7 @@ import json
 import os
 import utils
 from pytube import  YouTube
+import gflags
 
 test_json_file ='json/sports1m_test.json'
 train_json_file = 'json/sports1m_train.json'
@@ -39,6 +40,7 @@ def download(json_data, list_info_file, save_dir):
         print ('Breakpoint')
 
     print ('Done Download')
+
 
 if __name__=='__main__':
     json_data = read_json(test_json_file)

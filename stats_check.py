@@ -1,14 +1,12 @@
 import json
 import os
 import utils
-from pytube import  YouTube
-
-test_json_file ='json/sports1m_test.json'
-train_json_file = 'json/sports1m_train.json'
+from pytube import YouTube
+import gflags
+import sys
 
 
 youtube_link ='https://www.youtube.com/watch?v='
-save_dir = './videos'
 
 
 def read_json(json_file):
@@ -20,29 +18,50 @@ def read_json(json_file):
 
 
 # duration is in seconds
-def check(json_data, duration = 10):
+def check_duration(json_data, dstfile, duration = 12):
     counts = 0
-    for datum in json_data:
-        if datum['duration'] > 10:
+    refined_list = []
+    for i, datum in enumerate(json_data):
+        if datum['duration'] > duration:
             continue
 
         videolink = youtube_link + datum['id']
         try:
             yt = YouTube(videolink)
-            # video = yt.get('mp4', '360p' )
-            # video.filename = datum['id']
-            # video.download(save_dir)
-            # add a rename process:
-            print ('{:s} -- {:d} seconds'.format(datum['id'], datum['duration']))
+            print ('{:05d} : {:s} -- {:d} seconds'.format(i,datum['id'], datum['duration']))
             counts += 1
-
+            refined_list.append(datum)
         except:
-            print ('{:s} NOT valid'.format(datum['id']))
+            print ('{:05d} : {:s} NOT valid'.format(i, datum['id']))
             continue
 
+        # debug check:
+        if i >200:
+            break
+
+    with open(dstfile, 'w') as outfile:
+        json.dump(refined_list, outfile)
 
     print ('Done Checking, {:d} valid'.format(counts))
 
+
+def main(argv):
+    FLAGS = gflags.FLAGS
+    gflags.DEFINE_integer('duration', 12, 'keep videos with duration less than [12]')
+    gflags.DEFINE_string('srcfile', 'json/sports1m_test.json', 'source jason file[json/sports1m_test.json]')
+    gflags.DEFINE_string('dstfile', None, 'dstination json file[json/sports1m_test_(duration).json]')
+
+    argv = FLAGS(argv)
+    
+    srcfile = FLAGS.srcfile
+    dstfile = FLAGS.dstfile
+    if not dstfile:
+        srcname, srcext = os.path.splitext(srcfile)
+        dstfile = '{:s}_{:02d}.{:s}'.format(srcname,FLAGS.duration, srcext)
+
+
+    raw_json_data = read_json(srcfile)
+    check_duration(raw_json_data, dstfile=dstfile, duration=FLAGS.duration)
+
 if __name__=='__main__':
-    json_data = read_json(test_json_file)
-    check(json_data)
+    main(sys.argv)
