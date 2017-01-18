@@ -3,4 +3,5 @@ json/
 videos/
 *.pyc
 tarballs/
+videos
 cross-validation/
