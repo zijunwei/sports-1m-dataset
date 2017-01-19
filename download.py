@@ -3,13 +3,10 @@ import os
 import utils
 from pytube import  YouTube
 import gflags
-
-test_json_file ='json/sports1m_test.json'
-train_json_file = 'json/sports1m_train.json'
+import sys
 
 
 youtube_link ='https://www.youtube.com/watch?v='
-save_dir = './videos'
 
 
 def read_json(json_file):
@@ -20,28 +17,43 @@ def read_json(json_file):
     return data
 
 
-def download(json_data, list_info_file, save_dir):
+def download(json_data, save_dir, video_format='mp4', video_resolution='360p'):
     save_dir = utils.get_dir(save_dir)
-    for idx in xrange(len(json_data)):
-        videolink = youtube_link + json_data[idx]['id']
+    count = 0
+    nfiles =len(json_data)
+    for i, datum in enumerate(json_data):
+        videolink = youtube_link + datum['id']
         try:
             yt = YouTube(videolink)
-            video = yt.get('mp4', '360p' )
-            video.filename = json_data[idx]['id']
+            video = yt.get(video_format, video_resolution)
+            video.filename = datum['id']
             video.download(save_dir)
-            # add a rename process:
-
-
+            count += 1
+            print ('{:d} : {:d} -- {:s}'.format(i, nfiles, datum['id']))
+            
+            # debug here:
+            # if count == 5:
+                # break
         except:
-            print ('{:s} not valid'.format(json_data[idx]['id']))
+            print ('{:s} NOT valid'.format(datum['id']))
             continue
 
+    print ('Done Download, {:d} is downloaded'.format(count))
 
-        print ('Breakpoint')
 
-    print ('Done Download')
+def main(argv):
+    FLAGS = gflags.FLAGS
+    gflags.DEFINE_string('jsonfile', 'json/sports1m_test.json', 'jason file to read from[json/sports1m_test.json]')
+    gflags.DEFINE_string('savedir', 'tmp', 'dstination directory to save files[tmp]')
+    gflags.DEFINE_string('video_format', 'mp4', 'video format[mp4]')
+    gflags.DEFINE_string('video_resolution', '360p', 'video resolution 360p, 720p and so on[360p]')
+    argv = FLAGS(argv)
 
+    jsonfile = FLAGS.jsonfile
+    savedir = utils.get_dir(FLAGS.savedir)
+
+    raw_json_data = read_json(jsonfile)
+    download(raw_json_data, save_dir=savedir)
 
 if __name__=='__main__':
-    json_data = read_json(test_json_file)
-    download(json_data, None, save_dir= save_dir)
+    main(sys.argv)
